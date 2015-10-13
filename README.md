@@ -1,10 +1,12 @@
 # nrf51_beacon
 An iBeacon example with nrf51 chip-set.
 The firmware has been developed on top of softdevice s110 and Nordic SDK running on a nrf51 PCA10028 Dev. Kit.
+You must have an arm-eabi-none GCC toolchain and JLink installed.
 
 
 **Install**
 
+Download Segger JLink tool from https://www.segger.com/jlink-software.html. Unpack it and move it to /opt directory.
 Download the Nordic SDK from https://developer.nordicsemi.com/nRF51_SDK/nRF51_SDK_v9.x.x/. Unpack it and move it to /opt directory.
 Clone my nrfjprog.sh repo in /opt directory by running:
 
