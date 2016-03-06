@@ -22,6 +22,10 @@
 */
 
 
+
+
+/* ------------------- Inclusions ------------------- */
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -29,6 +33,11 @@
 #include "softdevice_handler.h"
 #include "bsp.h"
 #include "app_timer.h"
+
+
+
+
+/* ------------------- Local defines ------------------- */
 
 #define USE_UICR_FOR_MAJ_MIN_VALUES
 
@@ -43,15 +52,15 @@
 #define NON_CONNECTABLE_ADV_INTERVAL    MSEC_TO_UNITS(100, UNIT_0_625_MS) 
 
 /* Company defines */
-#define COMPANY_IDENTIFIER		0x0059				/* Company identifier for Nordic Semiconductor ASA */
-#define COMPANY_IDENTIFIER_LENGTH	0x02				/* 2 bytes */
+#define COMPANY_IDENTIFIER				0x0059				/* Company identifier for Nordic Semiconductor ASA */
+#define COMPANY_IDENTIFIER_LENGTH		0x02				/* 2 bytes */
 
 /* Beacon info */
-#define BEACON_DATA_LENGTH		0x15                       	/* Beacon info specific data */
+#define BEACON_DATA_LENGTH				0x15                       	/* Beacon info specific data */
 #define BEACON_INFO_LENGTH          	(BEACON_DATA_LENGTH + 2)	/* Beacon info total length: adding BEACON_DATA_LENGTH and BEACON_TYPE fields */
-#define BEACON_TYPE                 	0x02                         	/* Fixed Beacon type value */
-#define TX_POWER_MEASURED_RSSI         	0xC3                          	/* The Beacon's measured RSSI at 1 meter distance in dBm */                      
-#define BEACON_MAJOR_VALUE         	0x0102                    	/* Default Major value used to identify Beacons */ 
+#define BEACON_TYPE                 	0x02                        /* Fixed Beacon type value */
+#define TX_POWER_MEASURED_RSSI         	0xC3                        /* The Beacon's measured RSSI at 1 meter distance in dBm */                      
+#define BEACON_MAJOR_VALUE         		0x0102                    	/* Default Major value used to identify Beacons */ 
 #define BEACON_MINOR_VALUE            	0x0304                    	/* Default Minor value used to identify Beacons */ 
 /* Beacon UUID higher half */ 
 #define BEACON_UUID_HIGH               	(uint64_t)(0x0112233445566778) 
@@ -61,10 +70,10 @@
 #define BEACON_UUID_LENGTH             	16	/* 16 byte - 128 bit */
 
 /* Advertising data length */ 
-#define BEACON_ADV_DATA_LENGTH		(BEACON_INFO_LENGTH + COMPANY_IDENTIFIER_LENGTH + 5)	/* Total length of advertising data */
+#define BEACON_ADV_DATA_LENGTH			(BEACON_INFO_LENGTH + COMPANY_IDENTIFIER_LENGTH + 5)	/* Total length of advertising data */
 
 /* Maximum advertising data length */ 
-#define MAX_ADV_LENGTH			32
+#define MAX_ADV_LENGTH					32
 
 /* Value used as error code on stack dump, can be used to identify stack location on stack unwind */
 #define DEAD_BEEF                       0xDEADBEEF                        
@@ -75,20 +84,34 @@
 
 #if defined(USE_UICR_FOR_MAJ_MIN_VALUES)
 /* Address of the UICR register used by this example. The major and minor versions to be encoded into the advertising data will be picked up from this location */
-#define UICR_ADDRESS              	0x10001080                  	
+#define UICR_ADDRESS              		0x10001080                  	
 #endif
 
 
 
 
+/* ------------------- Local variables ------------------- */
+
 /* Parameters to be passed to the stack when starting advertising */
 static ble_gap_adv_params_t m_adv_params;    
 
 /* Parameters to be passed to the stack when starting advertising */
-static uint8_t device_name[] = "nrf51_iBeacon";                                 
+static uint8_t device_name[] = "nrf51_iBeacon"; 
 
 
 
+
+/* ------------------- Local functions prototypes ------------------- */
+
+static void advertising_init	(void);        
+static void advertising_start	(void);  
+static void ble_stack_init		(void);
+static void power_manage		(void);                  
+
+
+
+
+/* ------------------- Local functions ------------------- */
 
 /* Callback function for asserts in the SoftDevice.
    This function will be called in case of an assert in the SoftDevice.
@@ -102,8 +125,6 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
 {
     app_error_handler(DEAD_BEEF, line_num, p_file_name);
 }
-
-
 
 
 /* Function for initializing the Advertising functionality.
@@ -191,15 +212,12 @@ static void advertising_init(void)
     /* Initialize advertising parameters (used when starting advertising) */
     memset(&m_adv_params, 0, sizeof(m_adv_params));
 
-    //m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_NONCONN_IND;
     m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_SCAN_IND;
     m_adv_params.p_peer_addr = NULL;	/* Undirected advertisement */
     m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
     m_adv_params.interval    = NON_CONNECTABLE_ADV_INTERVAL;
     m_adv_params.timeout     = APP_CFG_NON_CONN_ADV_TIMEOUT;
 }
-
-
 
 
 /* brief Function for starting advertising */
@@ -215,8 +233,6 @@ static void advertising_start(void)
 }
 
 
-
-
 /* Function for initializing the BLE stack.
    Initializes the SoftDevice and the BLE event interrupt */
 static void ble_stack_init(void)
@@ -227,7 +243,7 @@ static void ble_stack_init(void)
     memset(&ble_enable_params, 0, sizeof(ble_enable_params));
 
     /* Initialize the SoftDevice handler module */
-    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, NULL);
+    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_RC_250_PPM_TEMP_4000MS_CALIBRATION, NULL);
 
     /* Enable BLE stack */
     ble_enable_params.gatts_enable_params.service_changed = IS_SRVC_CHANGED_CHARACT_PRESENT;
@@ -236,16 +252,12 @@ static void ble_stack_init(void)
 }
 
 
-
-
 /* Function for doing power management */
 static void power_manage(void)
 {
     uint32_t err_code = sd_app_evt_wait();
     APP_ERROR_CHECK(err_code);
 }
-
-
 
 
 /* Function for application main entry */
